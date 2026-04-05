@@ -1,0 +1,17 @@
+{
+  "template_id": "martial_arts",
+  "name_he": "אומנויות לחימה",
+  "modules": {
+    "lead_pipeline": { "enabled": true, "compare": true },
+    "revenue": { "enabled": true, "compare": true },
+    "expiring": { "enabled": true },
+    "retention": { "enabled": true, "ghost_days": 14 },
+    "operations": { "enabled": true, "low_fill_pct": 50 },
+    "debt": { "enabled": true, "threshold": 200 },
+    "late_cancellations": { "enabled": true },
+    "staff": { "enabled": false },
+    "renewals_forecast": { "enabled": true },
+    "birthdays": { "enabled": false },
+    "members_on_hold": { "enabled": false }
+  }
+}

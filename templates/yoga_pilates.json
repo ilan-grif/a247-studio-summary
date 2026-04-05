@@ -1,0 +1,17 @@
+{
+  "template_id": "yoga_pilates",
+  "name_he": "יוגה / פילאטיס",
+  "modules": {
+    "lead_pipeline": { "enabled": true, "compare": true },
+    "revenue": { "enabled": true, "compare": true },
+    "expiring": { "enabled": true },
+    "retention": { "enabled": true, "ghost_days": 14 },
+    "operations": { "enabled": true, "low_fill_pct": 50 },
+    "debt": { "enabled": false },
+    "late_cancellations": { "enabled": false },
+    "staff": { "enabled": false },
+    "renewals_forecast": { "enabled": true },
+    "birthdays": { "enabled": true },
+    "members_on_hold": { "enabled": true }
+  }
+}

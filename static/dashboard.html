@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הגדרות סיכום סטודיו</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            direction: rtl;
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 { font-size: 22px; margin-bottom: 16px; text-align: center; }
+        h2 { font-size: 16px; margin-bottom: 8px; color: #555; }
+
+        /* Template selector */
+        .template-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .template-section select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            direction: rtl;
+            background: #fff;
+        }
+
+        /* Module cards */
+        .module-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: opacity 0.2s;
+        }
+        .module-card.disabled { opacity: 0.5; }
+        .module-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .module-card .info { flex: 1; }
+        .module-card .name { font-size: 16px; font-weight: 600; }
+        .module-card .desc { font-size: 13px; color: #777; margin-top: 2px; }
+        .module-card .override-badge {
+            display: inline-block;
+            font-size: 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+
+        /* Toggle switch */
+        .toggle { position: relative; width: 48px; height: 28px; flex-shrink: 0; margin-right: 12px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle .slider {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc; border-radius: 28px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle .slider::before {
+            content: "";
+            position: absolute; width: 22px; height: 22px;
+            right: 3px; bottom: 3px;
+            background: #fff; border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .toggle input:checked + .slider { background: #4caf50; }
+        .toggle input:checked + .slider::before { transform: translateX(-20px); }
+
+        /* Options row */
+        .options { margin-top: 10px; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+        .option-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .option-row label { font-size: 13px; color: #555; }
+        .option-row input[type="number"] {
+            width: 70px; padding: 4px 8px; font-size: 14px;
+            border: 1px solid #ddd; border-radius: 6px; text-align: center;
+        }
+        .option-row .small-toggle { width: 40px; height: 24px; }
+        .option-row .small-toggle .slider::before { width: 18px; height: 18px; }
+        .option-row .small-toggle input:checked + .slider::before { transform: translateX(-16px); }
+
+        /* Buttons */
+        .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+        .btn {
+            flex: 1; padding: 14px; font-size: 16px; font-weight: 600;
+            border: none; border-radius: 12px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-save { background: #4caf50; color: #fff; }
+        .btn-save:hover { background: #43a047; }
+        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-preview { background: #e3f2fd; color: #1976d2; }
+        .btn-preview:hover { background: #bbdefb; }
+        .btn-preview:disabled { background: #eee; color: #999; cursor: not-allowed; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 12px 24px;
+            border-radius: 8px; font-size: 14px;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            z-index: 100;
+        }
+        .toast.show { opacity: 1; }
+
+        /* Preview panel */
+        .preview-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .preview-panel.visible { display: block; }
+        .preview-panel h2 { margin-bottom: 12px; }
+        .preview-content {
+            background: #1a1a2e;
+            color: #e8e8e8;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            direction: rtl;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .preview-content b { color: #fff; }
+        .preview-loading { text-align: center; padding: 40px; color: #999; }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block; width: 20px; height: 20px;
+            border: 2px solid #ccc; border-top-color: #333;
+            border-radius: 50%; animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>הגדרות סיכום סטודיו</h1>
+
+    <div class="template-section">
+        <h2>תבנית סטודיו</h2>
+        <select id="templateSelect"></select>
+    </div>
+
+    <h2>מודולים</h2>
+    <div id="modulesList"></div>
+
+    <div class="btn-row">
+        <button class="btn btn-save" id="saveBtn" onclick="saveConfig()">שמור הגדרות</button>
+        <button class="btn btn-preview" id="previewBtn" onclick="loadPreview()">תצוגה מקדימה</button>
+    </div>
+
+    <div class="preview-panel" id="previewPanel">
+        <h2>תצוגה מקדימה</h2>
+        <div class="preview-content" id="previewContent"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let state = { template: '', modules: [], availableTemplates: [] };
+        let dirty = false;
+
+        async function loadConfig() {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            state.template = data.template;
+            state.modules = data.modules;
+            state.availableTemplates = data.available_templates;
+            render();
+        }
+
+        function render() {
+            renderTemplateSelect();
+            renderModules();
+            dirty = false;
+            document.getElementById('saveBtn').disabled = false;
+        }
+
+        function renderTemplateSelect() {
+            const sel = document.getElementById('templateSelect');
+            sel.innerHTML = state.availableTemplates.map(t =>
+                `<option value="${t.id}" ${t.id === state.template ? 'selected' : ''}>${t.name_he}</option>`
+            ).join('');
+            sel.onchange = async () => {
+                state.template = sel.value;
+                // Reload module defaults from new template
+                const tRes = await fetch('/api/templates');
+                const templates = await tRes.json();
+                const selected = templates.find(t => t.id === state.template);
+                if (selected) {
+                    state.modules.forEach(m => {
+                        const tMod = selected.modules[m.id] || {};
+                        m.enabled = tMod.enabled !== undefined ? tMod.enabled : m.default_enabled;
+                        m.compare = tMod.compare || false;
+                        m.template_enabled = m.enabled;
+                        m.is_override = false;
+                        // Reset params to template values
+                        Object.keys(m.params).forEach(k => {
+                            m.params[k].value = tMod[k] !== undefined ? tMod[k] : m.params[k].default;
+                            m.params[k].is_override = false;
+                        });
+                    });
+                }
+                renderModules();
+                dirty = true;
+            };
+        }
+
+        function renderModules() {
+            const list = document.getElementById('modulesList');
+            list.innerHTML = state.modules.map((m, i) => {
+                const disabledClass = m.enabled ? '' : 'disabled';
+                const overrideBadge = m.is_override ? '<span class="override-badge">שונה</span>' : '';
+
+                let optionsHtml = '';
+                const paramKeys = Object.keys(m.params);
+                const hasCompare = m.supports_compare;
+
+                if (hasCompare || paramKeys.length > 0) {
+                    let rows = '';
+                    if (hasCompare) {
+                        rows += `
+                            <div class="option-row">
+                                <label>השוואה לתקופה קודמת</label>
+                                <label class="toggle small-toggle">
+                                    <input type="checkbox" ${m.compare ? 'checked' : ''}
+                                        onchange="toggleCompare(${i}, this.checked)" ${!m.enabled ? 'disabled' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>`;
+                    }
+                    paramKeys.forEach(k => {
+                        const p = m.params[k];
+                        const label = paramLabels[k] || k;
+                        rows += `
+                            <div class="option-row">
+                                <label>${label}</label>
+                                <input type="number" value="${p.value}"
+                                    onchange="updateParam(${i}, '${k}', this.value)" ${!m.enabled ? 'disabled' : ''}>
+                            </div>`;
+                    });
+                    optionsHtml = `<div class="options" style="${m.enabled ? '' : 'display:none'}">${rows}</div>`;
+                }
+
+                return `
+                    <div class="module-card ${disabledClass}" id="card-${i}">
+                        <div class="header">
+                            <div class="info">
+                                <div class="name">${m.name_he} ${overrideBadge}</div>
+                                <div class="desc">${m.description_he}</div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" ${m.enabled ? 'checked' : ''}
+                                    onchange="toggleModule(${i}, this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        ${optionsHtml}
+                    </div>`;
+            }).join('');
+        }
+
+        const paramLabels = {
+            'ghost_days': 'ימים ללא נוכחות',
+            'expiry_days': 'ימים לפני פקיעה',
+            'low_fill_pct': 'אחוז תפוסה מינימלי',
+            'threshold': 'סף חוב (₪)',
+        };
+
+        function toggleModule(idx, enabled) {
+            state.modules[idx].enabled = enabled;
+            state.modules[idx].is_override = true;
+            dirty = true;
+            renderModules();
+        }
+
+        function toggleCompare(idx, compare) {
+            state.modules[idx].compare = compare;
+            state.modules[idx].is_override = true;
+            dirty = true;
+        }
+
+        function updateParam(idx, key, value) {
+            state.modules[idx].params[key].value = parseInt(value) || 0;
+            state.modules[idx].params[key].is_override = true;
+            state.modules[idx].is_override = true;
+            dirty = true;
+        }
+
+        function buildOverrides() {
+            const overrides = {};
+            state.modules.forEach(m => {
+                const override = {};
+                let hasOverride = false;
+
+                // Check if enabled differs from template
+                if (m.enabled !== m.template_enabled) {
+                    override.enabled = m.enabled;
+                    hasOverride = true;
+                }
+
+                // Check compare
+                if (m.supports_compare && m.compare) {
+                    override.compare = m.compare;
+                    hasOverride = true;
+                }
+
+                // Check params
+                Object.entries(m.params).forEach(([k, p]) => {
+                    if (p.value !== p.template_value) {
+                        override[k] = p.value;
+                        hasOverride = true;
+                    }
+                });
+
+                if (hasOverride) {
+                    overrides[m.id] = override;
+                }
+            });
+            return overrides;
+        }
+
+        async function saveConfig() {
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.textContent = 'שומר...';
+
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        template: state.template,
+                        module_overrides: buildOverrides(),
+                    }),
+                });
+                const data = await res.json();
+                if (data.status === 'saved') {
+                    showToast('ההגדרות נשמרו בהצלחה');
+                    dirty = false;
+                } else {
+                    showToast('שגיאה בשמירה: ' + (data.error || 'unknown'));
+                }
+            } catch (e) {
+                showToast('שגיאה: ' + e.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'שמור הגדרות';
+        }
+
+        async function loadPreview() {
+            const panel = document.getElementById('previewPanel');
+            const content = document.getElementById('previewContent');
+            const btn = document.getElementById('previewBtn');
+
+            panel.classList.add('visible');
+            content.innerHTML = '<div class="preview-loading"><div class="spinner"></div><br>טוען נתונים מ-Arbox...</div>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        template: state.template,
+                        module_overrides: buildOverrides(),
+                    }),
+                });
+                const data = await res.json();
+                if (data.message) {
+                    content.innerHTML = data.message;
+                } else {
+                    content.innerHTML = '<div style="color:#f44">שגיאה: ' + (data.error || 'unknown') + '</div>';
+                }
+            } catch (e) {
+                content.innerHTML = '<div style="color:#f44">שגיאה: ' + e.message + '</div>';
+            }
+
+            btn.disabled = false;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Init
+        loadConfig();
+    </script>
+</body>
+</html>
