@@ -13,7 +13,7 @@ MODULES_DIR = Path(__file__).resolve().parent
 
 # Module load order (determines display order in report)
 MODULE_ORDER = [
-    "lead_pipeline",
+    "funnel_intelligence",
     "revenue",
     "expiring",
     "retention",
