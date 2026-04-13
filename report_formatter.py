@@ -29,10 +29,11 @@ def format_telegram_message(data, config):
     resolved = resolve_config(config)
     enabled = get_enabled_modules(resolved)
 
+    RLM = "\u200f"
     lines = []
 
     # Header
-    lines.append(f"<b>סיכום סטודיו — {date_full_he(period.get('today', ''))}</b>")
+    lines.append(f"{RLM}<b>סיכום סטודיו — {date_full_he(period.get('today', ''))}</b>")
     lines.append("")
 
     for mod, mod_config in enabled:

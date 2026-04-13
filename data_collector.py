@@ -72,6 +72,11 @@ def collect_studio_data(api_key, config):
 
     for mod, mod_config in enabled:
         module_id = mod.MODULE_META["id"]
+        # Inject top-level config sections into module params
+        if "funnel_benchmarks" in config:
+            mod_config["funnel_benchmarks"] = config["funnel_benchmarks"]
+        if "client_id" in config:
+            mod_config["client_id"] = config["client_id"]
         try:
             # Collect current period
             result = mod.collect(api_key, ws, ms, today, mod_config)

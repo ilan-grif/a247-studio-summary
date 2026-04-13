@@ -1,4 +1,30 @@
 {
+  "client_id": "a247",
   "template": "martial_arts",
-  "module_overrides": {}
+  "module_overrides": {
+    "revenue": { "enabled": false },
+    "expiring": { "enabled": false },
+    "retention": { "enabled": false },
+    "operations": { "enabled": false },
+    "debt": { "enabled": false },
+    "late_cancellations": { "enabled": false },
+    "renewals_forecast": { "enabled": false },
+    "birthdays": { "enabled": false },
+    "members_on_hold": { "enabled": false },
+    "staff": { "enabled": false }
+  },
+  "funnel_benchmarks": {
+    "response_days_healthy": 0,
+    "response_days_warning": 2,
+    "fast_response_rate_healthy": 60,
+    "fast_response_rate_warning": 30,
+    "lead_to_trial_healthy": 40,
+    "lead_to_trial_warning": 20,
+    "trial_show_rate_healthy": 70,
+    "trial_show_rate_warning": 50,
+    "trial_to_conversion_healthy": 40,
+    "trial_to_conversion_warning": 25,
+    "overall_conversion_healthy": 12,
+    "overall_conversion_warning": 5
+  }
 }
