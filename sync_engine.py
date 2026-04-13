@@ -101,21 +101,17 @@ def sync_client(client_id, api_key=None):
             n_trials += upsert_trials(conn, trials)
         logger.info(f"  ✓ {n_trials} trials synced")
 
-        # Sync conversions
-        logger.info("  Pulling conversions...")
-        n_conv = 0
-        for from_d, to_d in chunks:
-            conversions = get_paginated(api_key, "convertedLeadReport", fromDate=from_d, toDate=to_d)
-            n_conv += upsert_conversions(conn, conversions)
-        logger.info(f"  ✓ {n_conv} conversions synced")
-
-        # Sync sales
+        # Sync sales + extract conversions from sales
         logger.info("  Pulling sales...")
         n_sales = 0
+        n_conv = 0
         for from_d, to_d in chunks:
             sales = get_paginated(api_key, "salesReport", fromDate=from_d, toDate=to_d)
+            # Extract lead conversions (action = "Lead converted purchase")
+            lead_conversions = [s for s in sales if s.get("action") == "Lead converted purchase"]
+            n_conv += upsert_conversions(conn, lead_conversions)
             n_sales += upsert_sales(conn, sales)
-        logger.info(f"  ✓ {n_sales} sales synced")
+        logger.info(f"  ✓ {n_sales} sales synced ({n_conv} lead conversions)")
 
         # Log sync
         cur = conn.cursor()

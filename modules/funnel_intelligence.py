@@ -133,7 +133,7 @@ def collect(api_key, week_start, month_start, today, params):
         trials_booked = trials_row[0]
         trials_showed = trials_row[1] or 0
 
-        cur.execute("SELECT COUNT(*) FROM conversions WHERE converted_at >= %s AND converted_at <= %s",
+        cur.execute("SELECT COUNT(*) FROM conversions WHERE date >= %s AND date <= %s",
                     (current_start, today_date))
         conversions_current = cur.fetchone()[0]
 
@@ -146,16 +146,16 @@ def collect(api_key, week_start, month_start, today, params):
         trials_booked_prev = prev_trials_row[0]
         trials_showed_prev = prev_trials_row[1] or 0
 
-        cur.execute("SELECT COUNT(*) FROM conversions WHERE converted_at >= %s AND converted_at <= %s",
+        cur.execute("SELECT COUNT(*) FROM conversions WHERE date >= %s AND date <= %s",
                     (prev_start, prev_end))
         conversions_prev = cur.fetchone()[0]
 
         # ── Time-Window Conversion Analysis ──
         cur.execute("""
-            SELECT (c.converted_at - t.date) as days_to_convert
+            SELECT (c.date - t.date) as days_to_convert
             FROM conversions c
-            JOIN trials t ON c.lead_id = t.user_id
-            WHERE c.converted_at >= %s
+            JOIN trials t ON c.user_id = t.user_id
+            WHERE c.date >= %s
         """, (current_start,))
         conversion_days = [row[0] for row in cur.fetchall() if row[0] is not None]
 
@@ -178,10 +178,10 @@ def collect(api_key, week_start, month_start, today, params):
             SELECT l.lead_status, COUNT(*) as cnt
             FROM trials t
             JOIN leads l ON t.user_id = l.user_id
-            LEFT JOIN conversions c ON t.user_id = c.lead_id
+            LEFT JOIN conversions c ON t.user_id = c.user_id
             WHERE t.check_in = 'Yes'
               AND t.date >= %s AND t.date <= %s
-              AND c.lead_id IS NULL
+              AND c.user_id IS NULL
             GROUP BY l.lead_status
             ORDER BY cnt DESC
         """, (current_start, today_date))
@@ -194,7 +194,7 @@ def collect(api_key, week_start, month_start, today, params):
         cur.execute("""
             SELECT COUNT(*)
             FROM trials t
-            JOIN conversions c ON t.user_id = c.lead_id
+            JOIN conversions c ON t.user_id = c.user_id
             WHERE t.check_in = 'Yes' AND t.date >= %s AND t.date <= %s
         """, (current_start, today_date))
         converted_from_trials = cur.fetchone()[0]

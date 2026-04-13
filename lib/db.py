@@ -85,13 +85,13 @@ CREATE TABLE IF NOT EXISTS trials (
 );
 
 CREATE TABLE IF NOT EXISTS conversions (
-    lead_id         INTEGER PRIMARY KEY,
+    sale_id         INTEGER PRIMARY KEY,
     user_id         INTEGER,
-    converted_at    DATE,
-    converted_by    TEXT,
-    converted_by_id INTEGER,
-    membership_type TEXT,
-    lead_source     TEXT,
+    date            DATE,
+    price           NUMERIC,
+    item_name       TEXT,
+    item_type       TEXT,
+    sale_person     TEXT,
     synced_at       TIMESTAMP DEFAULT NOW()
 );
 
@@ -303,28 +303,30 @@ def upsert_trials(conn, trials_data):
 
 
 def upsert_conversions(conn, conversions_data):
-    """Upsert conversions into the client's conversions table."""
+    """Upsert conversions into the client's conversions table.
+    Source: salesReport filtered to action='Lead converted purchase'.
+    """
     if not conversions_data:
         return 0
     cur = conn.cursor()
     values = []
     for c in conversions_data:
         values.append((
-            c.get("lead_id"),
+            c.get("sale_id"),
             c.get("user_id"),
-            c.get("converted_at"),
-            c.get("converted_by", ""),
-            c.get("converted_by_id"),
-            c.get("membership_type_name", ""),
-            c.get("lead_source", ""),
+            c.get("date"),
+            float(c.get("price") or 0),
+            c.get("item_name", ""),
+            c.get("item_type", ""),
+            c.get("sale_person_name", ""),
         ))
     execute_values(cur, """
-        INSERT INTO conversions (lead_id, user_id, converted_at, converted_by, converted_by_id, membership_type, lead_source, synced_at)
+        INSERT INTO conversions (sale_id, user_id, date, price, item_name, item_type, sale_person, synced_at)
         VALUES %s
-        ON CONFLICT (lead_id) DO UPDATE SET
-            converted_at = EXCLUDED.converted_at,
-            converted_by = EXCLUDED.converted_by,
-            membership_type = EXCLUDED.membership_type,
+        ON CONFLICT (sale_id) DO UPDATE SET
+            price = EXCLUDED.price,
+            item_name = EXCLUDED.item_name,
+            sale_person = EXCLUDED.sale_person,
             synced_at = NOW()
     """, values, template="(%s, %s, %s, %s, %s, %s, %s, NOW())")
     return len(values)
