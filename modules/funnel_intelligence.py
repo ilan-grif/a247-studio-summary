@@ -332,13 +332,12 @@ def format(data, compare_data=None):
         all_leads_fast_rate = round(sc / tl * 100) if tl else 0
 
         if md == 0:
-            time_str = "באותו יום"
+            lines.append(f"{RLM}{icon} רוב הלידים מקבלים מענה <b>באותו יום</b>")
         elif md == 1:
-            time_str = "יום אחד"
+            lines.append(f"{RLM}{icon} רוב הלידים מקבלים מענה <b>תוך יום</b>")
         else:
-            time_str = f"{md} ימים"
+            lines.append(f"{RLM}{icon} רוב הלידים מקבלים מענה <b>תוך {md} ימים</b>")
 
-        lines.append(f"{RLM}{icon} זמן תגובה: <b>{time_str}</b> (חציון)")
         lines.append(f"{RLM}  {all_leads_fast_rate}% מכל הלידים קיבלו מענה באותו יום ({sc} מתוך {tl})")
         if issue["score"] >= 3:
             lines.append(f"{RLM}{RECOMMENDATIONS['speed_to_lead']}")
@@ -428,9 +427,14 @@ def format(data, compare_data=None):
     return lines
 
 
-def _trend_text(current, previous, min_delta=5):
+def _trend_text(current, previous, min_delta=15):
+    """Show comparison only when change is dramatic (>15pp), with context."""
     if not previous:
         return ""
-    if abs(current - previous) < min_delta:
+    delta = current - previous
+    if abs(delta) < min_delta:
         return ""
-    return f" (לעומת {previous}%)"
+    if delta > 0:
+        return f" (עלייה מ-{previous}% בחודש שעבר)"
+    else:
+        return f" (ירידה מ-{previous}% בחודש שעבר)"
