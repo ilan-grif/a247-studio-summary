@@ -4,6 +4,7 @@
   "modules": {
     "funnel_intelligence": { "enabled": true },
     "revenue": { "enabled": true, "compare": true },
+    "sales_by_agent": { "enabled": true, "compare": true },
     "expiring": { "enabled": true },
     "retention": { "enabled": true, "ghost_days": 14 },
     "operations": { "enabled": true, "low_fill_pct": 50 },

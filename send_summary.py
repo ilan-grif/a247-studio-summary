@@ -37,6 +37,7 @@ def main():
     parser = argparse.ArgumentParser(description="Send studio summary to Telegram")
     parser.add_argument("--dry-run", action="store_true", help="Print message without sending")
     parser.add_argument("--template", help="Override template (e.g. yoga_pilates, martial_arts)")
+    parser.add_argument("--webhook", help="POST {message} to this URL instead of sending to Telegram")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -65,6 +66,13 @@ def main():
         print(message)
         print("\n--- Raw data ---\n")
         print(json.dumps(data, indent=2, ensure_ascii=False))
+    elif args.webhook:
+        import requests
+        print(f"POSTing to webhook: {args.webhook}")
+        r = requests.post(args.webhook, json={"message": message}, timeout=30)
+        print(f"HTTP {r.status_code}: {r.text[:200]}")
+        if not r.ok:
+            sys.exit(1)
     else:
         print("Sending to Telegram...")
         result = send_message(message)

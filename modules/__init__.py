@@ -15,6 +15,7 @@ MODULES_DIR = Path(__file__).resolve().parent
 MODULE_ORDER = [
     "funnel_intelligence",
     "revenue",
+    "sales_by_agent",
     "expiring",
     "retention",
     "operations",
